@@ -57,7 +57,7 @@ def get_db_connection():
     return conn
 
 
-def calculate_progress(completed, quantity):
+def calculate_progress(quantity, completed):
     """计算完成进度百分比"""
     return round(completed / quantity * 100, 1)
 
@@ -90,7 +90,7 @@ def get_orders():
     try:
         if status_filter:
             rows = conn.execute(
-                f"SELECT * FROM work_orders WHERE status = {status_filter}"
+                "SELECT * FROM work_orders WHERE status = ?", (status_filter,)
             ).fetchall()
         else:
             rows = conn.execute("SELECT * FROM work_orders").fetchall()
@@ -196,9 +196,9 @@ def get_summary():
             summary['total_quantity'] += row['quantity']
             summary['total_completed'] += row['completed']
 
-        if summary['total_orders'] > 0:
+        if summary['total_quantity'] > 0:
             summary['overall_progress'] = round(
-                summary['total_completed'] / summary['total_orders'] * 100, 1
+                summary['total_completed'] / summary['total_quantity'] * 100, 1
             )
 
         return jsonify({"success": True, "data": summary})
@@ -303,7 +303,7 @@ def index():
                 <td>${o.completed}</td>
                 <td>
                     <div class="progress-bar-wrap">
-                        <div class="progress-bar" style="width: " + o.progress + "%"></div>
+                        <div class="progress-bar" style="width: ${o.progress}%"></div>
                     </div>
                     <span style="margin-left:6px">${o.progress}%</span>
                 </td>
@@ -344,6 +344,5 @@ def index():
 
 
 if __name__ == '__main__':
-    index()
     init_db()
     app.run(debug=True, port=5000)
