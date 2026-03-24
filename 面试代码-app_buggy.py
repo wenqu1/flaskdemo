@@ -164,6 +164,7 @@ def update_progress(order_id):
             "UPDATE work_orders SET completed=?, status=?, updated_at=? WHERE id=?",
             (new_completed, new_status, now, order_id)
         )
+        conn.commit()
 
         # 返回更新后的数据
         updated_row = conn.execute(
@@ -329,6 +330,9 @@ def index():
 
         const res = await fetch('/api/orders/' + orderId + '/progress', {
             method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ completed })
         });
         const json = await res.json();
