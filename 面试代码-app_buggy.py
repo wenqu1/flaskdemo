@@ -59,6 +59,8 @@ def get_db_connection():
 
 def calculate_progress(quantity, completed):
     """计算完成进度百分比"""
+    if quantity == 0:
+        return 0.0
     return round(completed / quantity * 100, 1)
 
 
@@ -129,6 +131,9 @@ def update_progress(order_id):
       - completed 大于 0 且小于 quantity 时 status 为 'in_progress'
     """
     data = request.get_json()
+    
+    if not data or 'completed' not in data:
+        return jsonify({"success": False, "error": "缺少 completed 参数"}), 400
 
     new_completed = data['completed']
 
@@ -192,7 +197,9 @@ def get_summary():
         }
 
         for row in rows:
-            summary[row['status']] += 1
+            status_val = row['status']
+            if status_val in summary:
+                summary[status_val] += 1
             summary['total_quantity'] += row['quantity']
             summary['total_completed'] += row['completed']
 
@@ -346,3 +353,6 @@ def index():
 if __name__ == '__main__':
     init_db()
     app.run(debug=True, port=5000)
+
+# 测试bug
+get_orders
